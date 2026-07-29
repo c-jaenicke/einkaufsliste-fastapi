@@ -1,0 +1,21 @@
+services:
+  # https://hub.docker.com/r/pgvector/pgvector
+  db-pg:
+    image: pgvector/pgvector:pg18
+    restart: no
+    ports:
+      - "127.0.0.1:10000:5432"
+    env_file:
+      - .env-dev
+    volumes:
+      - db-pg-data:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 10s
+
+volumes:
+  db-pg-data:
+
