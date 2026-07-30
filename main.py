@@ -261,6 +261,7 @@ async def upload_item_image(id: int, file: UploadFile = File(...)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
     if file.content_type not in ACCEPTED_IMAGE_CONTENT_TYPES:
+        logger.warning(f"Rejected image upload with content_type={file.content_type!r} filename={file.filename!r}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported image format. Use JPEG, PNG, WebP, GIF, or HEIC")
 
     content = await file.read()
@@ -661,6 +662,7 @@ async def upload_recipe_image(id: int, file: UploadFile = File(...)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Recipe not found")
 
     if file.content_type not in ACCEPTED_IMAGE_CONTENT_TYPES:
+        logger.warning(f"Rejected image upload with content_type={file.content_type!r} filename={file.filename!r}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported image format. Use JPEG, PNG, WebP, GIF, or HEIC")
 
     content = await file.read()
