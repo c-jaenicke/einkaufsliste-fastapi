@@ -114,7 +114,8 @@ async def create_item(item_in: models.ItemCreate):
             note=item_in.note,
             amount=item_in.amount,
             store_id=item_in.store_id,
-            category_id=item_in.category_id
+            category_id=item_in.category_id,
+            favorite=item_in.favorite
         )
         return {"status": "created"}
     except Exception as e:
@@ -188,7 +189,8 @@ async def update_item(id: int, item_in: models.ItemUpdate):
             note=item_in.note,
             amount=item_in.amount,
             store_id=item_in.store_id,
-            category_id=item_in.category_id
+            category_id=item_in.category_id,
+            favorite=item_in.favorite
         )
         return {"status": "updated"}
     except HTTPException:

@@ -163,17 +163,18 @@ async def test_update_item(client):
     await client.post("/items", json={"name": "Butter", "amount": 1})
     response = await client.get("/items")
     item_id = response.json()[0]["id"]
-    
+
     # Update item
     response = await client.put(f"/items/{item_id}", json={
         "name": "Salted Butter",
         "note": "Bio",
         "amount": 3,
         "store_id": 1,
-        "category_id": 1
+        "category_id": 1,
+        "favorite": True
     })
     assert response.status_code == status.HTTP_200_OK
-    
+
     # Verify details
     response = await client.get(f"/items/{item_id}")
     data = response.json()
@@ -182,6 +183,7 @@ async def test_update_item(client):
     assert data["amount"] == 3
     assert data["store_id"] == 1
     assert data["category_id"] == 1
+    assert data["favorite"] is True
 
 async def test_toggle_item_status(client):
     await client.post("/items", json={"name": "Eggs", "amount": 10})
@@ -201,6 +203,13 @@ async def test_toggle_item_status(client):
     
     response = await client.get(f"/items/{item_id}")
     assert response.json()["status"] == "new"
+
+async def test_create_item_favorite(client):
+    response = await client.post("/items", json={"name": "Eggs", "amount": 10, "favorite": True})
+    assert response.status_code == status.HTTP_201_CREATED
+
+    response = await client.get("/items")
+    assert response.json()[0]["favorite"] is True
 
 async def test_delete_item(client):
     await client.post("/items", json={"name": "Bread", "amount": 1})

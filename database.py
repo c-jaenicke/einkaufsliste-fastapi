@@ -68,6 +68,7 @@ async def init_db():
             await cur.execute("ALTER TABLE items ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();")
             await cur.execute("ALTER TABLE items ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();")
             await cur.execute("ALTER TABLE items ADD COLUMN IF NOT EXISTS image_path VARCHAR;")
+            await cur.execute("ALTER TABLE items ADD COLUMN IF NOT EXISTS favorite BOOLEAN NOT NULL DEFAULT FALSE;")
 
             # Check constraint for positive amount
             await cur.execute("ALTER TABLE items DROP CONSTRAINT IF EXISTS check_amount_positive;")
@@ -343,14 +344,14 @@ async def get_all_items() -> List[Dict[str, Any]]:
     p = get_pool()
     async with p.connection() as conn:
         async with conn.cursor(row_factory=dict_row) as cur:
-            await cur.execute(f"SELECT id, name, note, amount, status, store_id, category_id, image_path, created_at, updated_at FROM items {ITEM_ORDER_BY};")
+            await cur.execute(f"SELECT id, name, note, amount, status, store_id, category_id, image_path, favorite, created_at, updated_at FROM items {ITEM_ORDER_BY};")
             return await cur.fetchall()
 
 async def get_item_by_id(item_id: int) -> Optional[Dict[str, Any]]:
     p = get_pool()
     async with p.connection() as conn:
         async with conn.cursor(row_factory=dict_row) as cur:
-            await cur.execute("SELECT id, name, note, amount, status, store_id, category_id, image_path, created_at, updated_at FROM items WHERE id = %s;", (item_id,))
+            await cur.execute("SELECT id, name, note, amount, status, store_id, category_id, image_path, favorite, created_at, updated_at FROM items WHERE id = %s;", (item_id,))
             return await cur.fetchone()
 
 async def get_items_filtered(
@@ -392,7 +393,7 @@ async def get_items_filtered(
             await cur.execute(query, params)
             return await cur.fetchall()
 
-async def create_item(name: str, note: str, amount: int, store_id: Optional[int], category_id: Optional[int]) -> None:
+async def create_item(name: str, note: str, amount: int, store_id: Optional[int], category_id: Optional[int], favorite: bool = False) -> None:
     p = get_pool()
     async with p.connection() as conn:
         async with conn.cursor(row_factory=dict_row) as cur:
@@ -424,24 +425,24 @@ async def create_item(name: str, note: str, amount: int, store_id: Optional[int]
             
             await cur.execute(
                 """
-                INSERT INTO items (name, note, amount, status, store_id, category_id) 
-                VALUES (%s, %s, %s, 'new', %s, %s);
+                INSERT INTO items (name, note, amount, status, store_id, category_id, favorite)
+                VALUES (%s, %s, %s, 'new', %s, %s, %s);
                 """,
-                (name, note, amount, final_store_id, final_category_id)
+                (name, note, amount, final_store_id, final_category_id, favorite)
             )
             await conn.commit()
 
-async def update_item(item_id: int, name: str, note: str, amount: int, store_id: Optional[int], category_id: Optional[int]) -> None:
+async def update_item(item_id: int, name: str, note: str, amount: int, store_id: Optional[int], category_id: Optional[int], favorite: bool = False) -> None:
     p = get_pool()
     async with p.connection() as conn:
         async with conn.cursor() as cur:
             await cur.execute(
                 """
-                UPDATE items 
-                SET name = %s, note = %s, amount = %s, store_id = %s, category_id = %s
+                UPDATE items
+                SET name = %s, note = %s, amount = %s, store_id = %s, category_id = %s, favorite = %s
                 WHERE id = %s;
                 """,
-                (name, note, amount, store_id, category_id, item_id)
+                (name, note, amount, store_id, category_id, favorite, item_id)
             )
             await conn.commit()
 
@@ -790,7 +791,7 @@ async def update_item_image(item_id: int, image_path: Optional[str]) -> Optional
     async with p.connection() as conn:
         async with conn.cursor(row_factory=dict_row) as cur:
             await cur.execute(
-                "UPDATE items SET image_path = %s WHERE id = %s RETURNING id, name, note, amount, status, store_id, category_id, image_path, created_at, updated_at;",
+                "UPDATE items SET image_path = %s WHERE id = %s RETURNING id, name, note, amount, status, store_id, category_id, image_path, favorite, created_at, updated_at;",
                 (image_path, item_id)
             )
             updated = await cur.fetchone()

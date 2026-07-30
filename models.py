@@ -75,6 +75,7 @@ class ItemBase(BaseModel):
     amount: int
     store_id: Optional[int] = None
     category_id: Optional[int] = None
+    favorite: bool = False
 
 class ItemCreate(ItemBase):
     @field_validator("name")
