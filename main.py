@@ -5,6 +5,7 @@ import logging
 from typing import List, Optional
 from contextlib import asynccontextmanager
 from PIL import Image
+import pillow_heif
 
 from fastapi import FastAPI, HTTPException, Request, Response, status, File, UploadFile, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,8 +16,21 @@ import database
 import models
 from config import settings
 
+# iPhones default to saving photos as HEIC, which Pillow can't decode
+# without this registered as a plugin opener.
+pillow_heif.register_heif_opener()
+
 # Limit memory decompression bomb limit to 25 megapixels (e.g. 5000x5000px)
 Image.MAX_IMAGE_PIXELS = 25000000
+
+ACCEPTED_IMAGE_CONTENT_TYPES = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "image/heic",
+    "image/heif",
+]
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -246,8 +260,8 @@ async def upload_item_image(id: int, file: UploadFile = File(...)):
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
-    if file.content_type not in ["image/jpeg", "image/png", "image/webp", "image/gif"]:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported image format. Use JPEG, PNG, WebP, or GIF")
+    if file.content_type not in ACCEPTED_IMAGE_CONTENT_TYPES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported image format. Use JPEG, PNG, WebP, GIF, or HEIC")
 
     content = await file.read()
     if len(content) > 5 * 1024 * 1024:
@@ -646,8 +660,8 @@ async def upload_recipe_image(id: int, file: UploadFile = File(...)):
     if not recipe:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Recipe not found")
 
-    if file.content_type not in ["image/jpeg", "image/png", "image/webp", "image/gif"]:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported image format. Use JPEG, PNG, WebP, or GIF")
+    if file.content_type not in ACCEPTED_IMAGE_CONTENT_TYPES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported image format. Use JPEG, PNG, WebP, GIF, or HEIC")
 
     content = await file.read()
     if len(content) > 5 * 1024 * 1024:
