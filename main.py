@@ -123,7 +123,7 @@ async def create_item(item_in: models.ItemCreate):
     Create a new shopping list item.
     """
     try:
-        await database.create_item(
+        new_id = await database.create_item(
             name=item_in.name,
             note=item_in.note,
             amount=item_in.amount,
@@ -131,7 +131,7 @@ async def create_item(item_in: models.ItemCreate):
             category_id=item_in.category_id,
             favorite=item_in.favorite
         )
-        return {"status": "created"}
+        return {"status": "created", "id": new_id}
     except Exception as e:
         logger.exception("Failed to create new item")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='An internal error occurred: failed to create new item.')

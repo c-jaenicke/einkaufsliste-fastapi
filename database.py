@@ -393,7 +393,7 @@ async def get_items_filtered(
             await cur.execute(query, params)
             return await cur.fetchall()
 
-async def create_item(name: str, note: str, amount: int, store_id: Optional[int], category_id: Optional[int], favorite: bool = False) -> None:
+async def create_item(name: str, note: str, amount: int, store_id: Optional[int], category_id: Optional[int], favorite: bool = False) -> int:
     p = get_pool()
     async with p.connection() as conn:
         async with conn.cursor(row_factory=dict_row) as cur:
@@ -426,11 +426,14 @@ async def create_item(name: str, note: str, amount: int, store_id: Optional[int]
             await cur.execute(
                 """
                 INSERT INTO items (name, note, amount, status, store_id, category_id, favorite)
-                VALUES (%s, %s, %s, 'new', %s, %s, %s);
+                VALUES (%s, %s, %s, 'new', %s, %s, %s)
+                RETURNING id;
                 """,
                 (name, note, amount, final_store_id, final_category_id, favorite)
             )
+            new_id = (await cur.fetchone())["id"]
             await conn.commit()
+            return new_id
 
 async def update_item(item_id: int, name: str, note: str, amount: int, store_id: Optional[int], category_id: Optional[int], favorite: bool = False) -> None:
     p = get_pool()

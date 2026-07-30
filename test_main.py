@@ -133,7 +133,9 @@ async def test_create_item_validation(client):
 async def test_create_item_success(client):
     response = await client.post("/items", json={"name": "Milk", "amount": 2, "note": "1.5% fat"})
     assert response.status_code == status.HTTP_201_CREATED
-    
+    created_id = response.json()["id"]
+    assert isinstance(created_id, int)
+
     response = await client.get("/items")
     data = response.json()
     assert len(data) == 1
