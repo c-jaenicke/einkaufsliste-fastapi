@@ -56,7 +56,7 @@ Settings are loaded via `pydantic-settings` from `.env-dev` or standard environm
 | `DSS` | Full connection string (optional) | _Constructed automatically if empty_ |
 | `POSTGRES_USER` | DB Username | `einkaufsliste-dev` |
 | `POSTGRES_PASSWORD` | DB Password | `einkaufsliste-dev-pass` |
-| `POSTGRES_DB` | DB Name | `einkfaufsliste-dev` |
+| `POSTGRES_DB` | DB Name | `einkaufsliste-dev` |
 | `POSTGRES_HOST` | DB Host | `127.0.0.1` |
 | `POSTGRES_PORT` | DB Port | `10000` |
 | `ALLOWED_ORIGINS` | CORS allowed origins (comma-separated) | `http://localhost:3000` |

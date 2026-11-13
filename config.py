@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     # Fallbacks from .env-dev
     postgres_password: str = Field(default="einkaufsliste-dev-pass", alias="POSTGRES_PASSWORD")
     postgres_user: str = Field(default="einkaufsliste-dev", alias="POSTGRES_USER")
-    postgres_db: str = Field(default="einkfaufsliste-dev", alias="POSTGRES_DB")
+    postgres_db: str = Field(default="einkaufsliste-dev", alias="POSTGRES_DB")
     postgres_host: str = Field(default="127.0.0.1", alias="POSTGRES_HOST")
     postgres_port: int = Field(default=10000, alias="POSTGRES_PORT")
 
